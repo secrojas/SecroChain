@@ -18,7 +18,9 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'name',
+        'first_name',
+        'last_name',
+        'dni',
         'email',
         'password',
     ];
@@ -44,5 +46,47 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Get the accounts for the user.
+     */
+    public function accounts()
+    {
+        return $this->hasMany(Account::class);
+    }
+
+    /**
+     * Get user's full name.
+     *
+     * @return string
+     */
+    public function getFullName(): string
+    {
+        return "{$this->first_name} {$this->last_name}";
+    }
+
+    /**
+     * Get total balance across all accounts.
+     *
+     * @return float
+     */
+    public function getTotalBalance(): float
+    {
+        return $this->accounts()->sum('balance');
+    }
+
+    /**
+     * Get all transactions across all accounts.
+     *
+     * @param int $limit
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getAllTransactions(int $limit = 50)
+    {
+        return Transaction::whereIn('account_id', $this->accounts()->pluck('id'))
+            ->latest()
+            ->limit($limit)
+            ->get();
     }
 }
