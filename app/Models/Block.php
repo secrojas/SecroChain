@@ -47,8 +47,10 @@ class Block extends Model
      */
     public function calculateHash(): string
     {
+        $timestamp = $this->created_at ? $this->created_at->timestamp : now()->timestamp;
+
         $blockData = $this->index .
-                     $this->created_at->timestamp .
+                     $timestamp .
                      json_encode($this->data) .
                      $this->previous_hash .
                      $this->nonce;
